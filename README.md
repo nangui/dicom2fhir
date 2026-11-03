@@ -80,7 +80,7 @@ Large files live in `data/`, which is ignored by git. Licenses are recorded per 
 
 | Dataset | Source | Used for | License |
 | --- | --- | --- | --- |
-| pydicom test files (`CT_small.dcm`, `MR_small.dcm`, ...) | [pydicom](https://github.com/pydicom/pydicom) | Unit test fixtures | To record in M2 |
+| pydicom test files (`CT_small.dcm`, `MR_small.dcm`, ...) | NEMA WG04 samples via [pydicom](https://github.com/pydicom/pydicom), pinned commit | Unit test fixtures, committed (68 KB), see [SOURCES.md](packages/core/test/fixtures/pydicom/SOURCES.md) | MIT (pydicom) |
 | Imaging Data Commons collections | [IDC](https://portal.imaging.datacommons.cancer.gov/) via `idc-index` | Dashboard demos | Per collection, to record in M2 |
 | TCIA collections | [The Cancer Imaging Archive](https://www.cancerimagingarchive.net/) | Dashboard demos | Per collection, to record in M2 |
 | Pseudo-PHI-DICOM-Data | TCIA | Audit demos: synthetic PHI planted in DICOM headers | To record in M2 |

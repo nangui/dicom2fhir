@@ -50,6 +50,7 @@ Packages are consumed from source (`exports` point to `.ts`), no build step betw
 | `pnpm docker:up` / `pnpm docker:down` | Dev stack: install, api (:3001), web (:5173) |
 | `docker compose --profile validator up -d --wait hapi` | Local HAPI (:8080), about 830 MB; on a 2 GB VM stop the dev stack first |
 | `scripts/validator-smoke.sh` | Validator accepts a valid ImagingStudy and rejects one without `status` |
+| `scripts/fetch-fixtures.sh` | Re-fetch the pydicom fixtures from a pinned commit and verify SHA-256 |
 
 Gotcha: **`pnpm up` is pnpm's alias for `pnpm update`.** Use `pnpm docker:up`.
 
