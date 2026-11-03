@@ -59,6 +59,54 @@ describe('createApp', () => {
     expect(logger.error).toHaveBeenCalledOnce()
   })
 
+  describe('tRPC under /api/trpc', () => {
+    const input = (value: unknown) => encodeURIComponent(JSON.stringify(value))
+
+    it('serves the ping query', async () => {
+      const res = await makeApp().request(`/api/trpc/ping?input=${input({ name: 'web' })}`)
+
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({
+        result: { data: { message: 'pong web', time: '2026-01-02T03:04:05.000Z' } },
+      })
+    })
+
+    it('returns 400 BAD_REQUEST for invalid input', async () => {
+      const res = await makeApp().request(`/api/trpc/ping?input=${input({ name: '' })}`)
+
+      expect(res.status).toBe(400)
+      expect(await res.json()).toMatchObject({ error: { data: { code: 'BAD_REQUEST' } } })
+    })
+
+    it('returns 404 NOT_FOUND for an unknown procedure', async () => {
+      const res = await makeApp().request('/api/trpc/nope')
+
+      expect(res.status).toBe(404)
+      expect(await res.json()).toMatchObject({ error: { data: { code: 'NOT_FOUND' } } })
+    })
+
+    it('masks internal error messages and stacks, and logs them', async () => {
+      const logger = { error: vi.fn() }
+      const app = makeApp({
+        logger,
+        now: () => {
+          throw new Error('PatientName=DOE^JOHN')
+        },
+      })
+
+      const res = await app.request(`/api/trpc/ping?input=${input({ name: 'web' })}`)
+      const body = await res.text()
+
+      expect(res.status).toBe(500)
+      expect(body).not.toContain('DOE')
+      expect(body).not.toContain('at ')
+      expect(JSON.parse(body)).toMatchObject({
+        error: { message: 'Internal error', data: { code: 'INTERNAL_SERVER_ERROR' } },
+      })
+      expect(logger.error).toHaveBeenCalledOnce()
+    })
+  })
+
   it('only serves routes under /api', async () => {
     const res = await makeApp().request('/health')
 

@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./trpc": "./src/trpc/router.ts",
+    "./app": "./src/create-app.ts"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node --import tsx src/server.ts",
@@ -12,6 +16,8 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.1.6",
+    "@hono/trpc-server": "^0.4.2",
+    "@trpc/server": "^11.23.0",
     "hono": "^4.13.16",
     "zod": "^4.6.7"
   },

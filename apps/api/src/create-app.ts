@@ -1,4 +1,6 @@
+import { trpcServer } from '@hono/trpc-server'
 import { Hono } from 'hono'
+import { appRouter } from './trpc/router'
 
 export interface AppDeps {
   version: string
@@ -19,7 +21,20 @@ export function createApp(deps: AppDeps) {
     })
   })
 
-  app.notFound((c) => c.json({ error: 'Not found' }, 404))
+  // basePath already adds /api to the route, but tRPC needs the full public path.
+  app.use(
+    '/trpc/*',
+    trpcServer({
+      endpoint: '/api/trpc',
+      router: appRouter,
+      createContext: () => ({ now: deps.now }),
+      onError: ({ error }) => {
+        if (error.code === 'INTERNAL_SERVER_ERROR') deps.logger.error(error)
+      },
+    }),
+  )
+
+  app.notFound((c)=> c.json({ error: 'Not found' }, 404))
 
   // Same JSON contract as 404. Never echo err.message: it could carry metadata.
   app.onError((err, c) => {

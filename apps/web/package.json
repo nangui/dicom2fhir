@@ -12,10 +12,15 @@
   },
   "dependencies": {
     "@dicom2fhir/core": "workspace:*",
+    "@tanstack/react-query": "^5.105.3",
+    "@trpc/client": "^11.23.0",
+    "@trpc/server": "^11.23.0",
+    "@trpc/tanstack-react-query": "^11.23.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@dicom2fhir/api": "workspace:*",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
