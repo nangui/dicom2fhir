@@ -1,4 +1,4 @@
-import { type DataSet, parseDicom as parseWithDicomParser } from 'dicom-parser'
+import { type DataSet, dicomParser } from './dicom-parser'
 
 export type ParseErrorKind = 'not-dicom' | 'truncated' | 'invalid'
 
@@ -20,7 +20,7 @@ export function parseDicom(bytes: Uint8Array): ParseResult {
     return failure('not-dicom', 'No "DICM" magic after the 128-byte preamble')
   }
   try {
-    return { ok: true, dataSet: parseWithDicomParser(bytes) }
+    return { ok: true, dataSet: dicomParser.parseDicom(bytes) }
   } catch (thrown) {
     const message = toMessage(thrown)
     return failure(classify(message), message)
