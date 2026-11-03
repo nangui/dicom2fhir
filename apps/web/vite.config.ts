@@ -5,7 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     // Same-origin /api in dev, like the Vercel rewrite in prod: no CORS to configure.
-    proxy: { '/api': 'http://localhost:3001' },
+    // Compose sets API_PROXY_TARGET=http://api:3001; on the host it is localhost.
+    proxy: { '/api': process.env.API_PROXY_TARGET ?? 'http://localhost:3001' },
   },
   test: {
     environment: 'jsdom',

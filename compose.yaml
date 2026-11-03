@@ -1,0 +1,115 @@
+name: dicom2fhir
+
+# Shared by install, api and web. Host node_modules (macOS binaries) are hidden
+# behind named volumes so the container gets its own Linux build of esbuild & co.
+x-node: &node
+  image: dicom2fhir-dev:local
+  pull_policy: never # built once by `install`, never pulled from a registry
+  init: true # tini as PID 1: forwards SIGTERM, reaps zombies
+  read_only: true # only the mounts below and /tmp are writable
+  tmpfs:
+    - /tmp
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+  volumes:
+    - .:/repo
+    - node_modules:/repo/node_modules
+    - api_node_modules:/repo/apps/api/node_modules
+    - web_node_modules:/repo/apps/web/node_modules
+    - core_node_modules:/repo/packages/core/node_modules
+    - pnpm_store:/pnpm/store
+
+# Rancher's virtiofs mount delivers no inotify events (fs.watch saw 0), so poll.
+x-watch-env: &watch-env
+  CHOKIDAR_USEPOLLING: 'true'
+  CHOKIDAR_INTERVAL: '300'
+
+services:
+  install:
+    <<: *node
+    # The only service that builds the shared image: three builds of one tag race.
+    build:
+      context: ./docker
+      dockerfile: dev.Dockerfile
+    command: ['pnpm', 'install', '--frozen-lockfile']
+    restart: 'no'
+    mem_limit: 1g
+
+  api:
+    <<: *node
+    working_dir: /repo/apps/api
+    # Direct exec, not `pnpm dev`: pnpm does not forward SIGTERM to node.
+    command: ['node_modules/.bin/tsx', 'watch', 'src/server.ts']
+    environment:
+      PORT: '3001'
+      <<: *watch-env
+    ports:
+      - '127.0.0.1:3001:3001'
+    mem_limit: 512m
+    depends_on:
+      install:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:3001/api/health']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
+
+  web:
+    <<: *node
+    working_dir: /repo/apps/web
+    command: ['node_modules/.bin/vite', '--host', '0.0.0.0', '--port', '5173', '--strictPort']
+    environment:
+      API_PROXY_TARGET: http://api:3001
+      <<: *watch-env
+    ports:
+      - '127.0.0.1:5173:5173'
+    mem_limit: 512m
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:5173/']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
+
+  # Local FHIR validator, OFF by default: it needs ~1.5 GB and the dev VM has 2 GB.
+  # Dev uses the public server (VALIDATOR_URL default); CI runs this container.
+  # Opt in with: docker compose --profile validator up -d hapi   (VM >= 3 GB)
+  # then set VALIDATOR_URL=http://hapi:8080/fhir for the api.
+  # Never receives DICOM, only FHIR generated from audited metadata.
+  hapi:
+    image: hapiproject/hapi:v8.12.0-2
+    profiles: [validator]
+    ports:
+      - '127.0.0.1:8080:8080'
+    mem_limit: 1536m
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      # Fixed heap rather than a percentage: predictable on a small VM.
+      JAVA_TOOL_OPTIONS: -Xms256m -Xmx1g -XX:+UseSerialGC
+    volumes:
+      - ./docker/hapi/Health.java:/healthcheck/Health.java:ro
+    healthcheck:
+      # Distroless: no shell or curl. A small, fast-starting JVM runs the check.
+      test: ['CMD', 'java', '-Xmx48m', '-XX:TieredStopAtLevel=1', '/healthcheck/Health.java']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 240s
+      start_interval: 10s
+
+volumes:
+  node_modules:
+  api_node_modules:
+  web_node_modules:
+  core_node_modules:
+  pnpm_store:

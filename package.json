@@ -10,7 +10,9 @@
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
     "lint": "eslint .",
-    "build": "pnpm -r --if-present build"
+    "build": "pnpm -r --if-present build",
+    "docker:up": "docker compose up -d --build --wait",
+    "docker:down": "docker compose down"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
