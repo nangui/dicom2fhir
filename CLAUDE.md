@@ -104,5 +104,14 @@ Parsed once at startup with zod; fails fast with a readable message. Empty value
   - Docker dev stack.
   - CI: check, per-commit and HAPI validator jobs.
   - README, LICENSE and this file.
-- **Next: M2**, data script (`data/`, gitignored) and DICOM utilities in `core`.
+- **M2 done (2026-11-03).**
+  - Pinned pydicom fixtures (committed, SHA-256 checked).
+  - `parseDicom` returns a typed result: not-dicom, truncated or invalid, fail closed.
+  - DA, PN and IS parsers and value readers.
+  - `extractInstance`, an allowlist of tags that is consistent across the 4 transfer syntaxes.
+  - `dicom-parser` interop adapter (its named imports crash under Node ESM and tsx).
+- **Next: M3**, parsing in Web Workers and aggregation into studies and series.
+  - Deduplicate by SOPInstanceUID: the three MR fixtures share one UID.
+  - Large datasets (IDC, TCIA, Pseudo-PHI) are scripted into `data/` when M5 and M6 need them.
+- Audit note for M6: "present but empty" differs from "absent" (Type 2 attributes); the value readers return undefined for both.
 - Known trade-off: `web` typechecks `api` sources through `AppRouter`. If Node types clash in M7, move `AppRouter` to a type-only module.

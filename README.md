@@ -92,8 +92,8 @@ Pseudo-PHI data is handled as if it were real PHI: it never leaves the browser.
 | Milestone | Scope | State |
 | --- | --- | --- |
 | M1 | Monorepo, web, api, tRPC, ESLint boundaries, Docker dev stack, CI | Done |
-| M2 | Data script and DICOM utilities | Next |
-| M3 | Parsing in Web Workers | Planned |
+| M2 | Test fixtures and DICOM utilities | Done |
+| M3 | Parsing in Web Workers | Next |
 | M4 | Upload UI | Planned |
 | M5 | Dataset dashboard | Planned |
 | M6 | De-identification audit with HIPAA Safe Harbor mapping | Planned |
