@@ -72,7 +72,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Start HAPI (compose profile, Java healthcheck)
+      - name: Build and start HAPI (compose profile, compiled Java healthcheck)
         run: docker compose --profile validator up -d --wait --wait-timeout 420 hapi
       - name: Smoke test $validate
         env:

@@ -69,7 +69,7 @@ The agent's output is checked with HAPI FHIR `$validate`, configured by `VALIDAT
 | Where | Validator |
 | --- | --- |
 | Local dev (default) | Public server `https://hapi.fhir.org/baseR4` |
-| Local, opt in | `docker compose --profile validator up -d hapi` (needs a Docker VM with 3 GB or more) |
+| Local, opt in | `docker compose --profile validator up -d --wait hapi` (about 830 MB; on a 2 GB VM stop the dev stack first) |
 | CI | HAPI container started by the `validator` job |
 
 Only FHIR generated from audited metadata is ever sent to a validator.

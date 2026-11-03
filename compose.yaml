@@ -79,13 +79,18 @@ services:
       start_period: 30s
       start_interval: 1s
 
-  # Local FHIR validator, OFF by default: it needs ~1.5 GB and the dev VM has 2 GB.
+  # Local FHIR validator, OFF by default: ~830 MB at rest, capped at 1.5 GB.
+  # Fits a 2 GB VM on its own (stop the dev stack first); give 3 GB to run both.
   # Dev uses the public server (VALIDATOR_URL default); CI runs this container.
-  # Opt in with: docker compose --profile validator up -d hapi   (VM >= 3 GB)
+  # Opt in with: docker compose --profile validator up -d --wait hapi
   # then set VALIDATOR_URL=http://hapi:8080/fhir for the api.
   # Never receives DICOM, only FHIR generated from audited metadata.
   hapi:
-    image: hapiproject/hapi:v8.12.0-2
+    # Upstream hapiproject/hapi:v8.12.0-2 plus a compiled healthcheck class.
+    build:
+      context: ./docker/hapi
+    image: dicom2fhir-hapi:local
+    pull_policy: build
     profiles: [validator]
     ports:
       - '127.0.0.1:8080:8080'
@@ -96,11 +101,10 @@ services:
     environment:
       # Fixed heap rather than a percentage: predictable on a small VM.
       JAVA_TOOL_OPTIONS: -Xms256m -Xmx1g -XX:+UseSerialGC
-    volumes:
-      - ./docker/hapi/Health.java:/healthcheck/Health.java:ro
     healthcheck:
       # Distroless: no shell or curl. A small, fast-starting JVM runs the check.
-      test: ['CMD', 'java', '-Xmx48m', '-XX:TieredStopAtLevel=1', '/healthcheck/Health.java']
+      # It inherits JAVA_TOOL_OPTIONS, so -Xms must be overridden too (Xms > Xmx fails).
+      test: ['CMD', 'java', '-Xms8m', '-Xmx48m', '-XX:TieredStopAtLevel=1', '-cp', '/healthcheck', 'Health']
       interval: 30s
       timeout: 20s
       retries: 3

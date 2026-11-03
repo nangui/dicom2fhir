@@ -48,7 +48,7 @@ Packages are consumed from source (`exports` point to `.ts`), no build step betw
 | --- | --- |
 | `pnpm test` / `pnpm typecheck` / `pnpm lint` / `pnpm build` | Checks across all packages |
 | `pnpm docker:up` / `pnpm docker:down` | Dev stack: install, api (:3001), web (:5173) |
-| `docker compose --profile validator up -d hapi` | Local HAPI (:8080), needs a VM with 3 GB or more |
+| `docker compose --profile validator up -d --wait hapi` | Local HAPI (:8080), about 830 MB; on a 2 GB VM stop the dev stack first |
 | `scripts/validator-smoke.sh` | Validator accepts a valid ImagingStudy and rejects one without `status` |
 
 Gotcha: **`pnpm up` is pnpm's alias for `pnpm update`.** Use `pnpm docker:up`.
@@ -67,7 +67,7 @@ Parsed once at startup with zod; fails fast with a readable message. Empty value
 
 - **Docker Compose is for local dev only.** Services run as non-root with a read-only root filesystem, dropped capabilities and tini as PID 1. Commands exec binaries directly, because pnpm does not forward SIGTERM. Host `node_modules` are hidden behind named volumes, since the macOS binaries do not run in Linux.
 - Rancher's virtiofs mount delivers no inotify events, so watchers use `CHOKIDAR_USEPOLLING`.
-- HAPI is behind the `validator` profile: the dev VM has 2 GB. It runs in CI instead.
+- HAPI is behind the `validator` profile (the dev VM has 2 GB) and always runs in CI. Its image adds a compiled healthcheck: the upstream image is distroless with a JRE only (no shell, no curl, no `java File.java`).
 - **Vercel (M11) is production:** Vercel Services, with `web` (Vite SPA) and `api` (Hono). `/api/*` is routed to `api`. HAPI cannot run there, so production uses the public validator.
 
 ## Conventions

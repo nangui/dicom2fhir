@@ -1,5 +1,6 @@
-// HAPI's default image is distroless: no shell, no curl. Java is the only tool
-// inside, so the healthcheck is a single-file program run with `java Health.java`.
+// HAPI's default image is distroless: no shell, no curl, JRE only. Java is the
+// only tool inside, so the healthcheck is a tiny Java program, compiled in
+// docker/hapi/Dockerfile and run with `java -cp /healthcheck Health`.
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
