@@ -1,0 +1,19 @@
+{
+	"name": "dicom2fhir",
+	"private": true,
+	"type": "module",
+	"packageManager": "pnpm@10.30.0",
+	"engines": {
+		"node": ">=22"
+	},
+	"scripts": {
+		"test": "pnpm -r --if-present test",
+		"typecheck": "pnpm -r --if-present typecheck",
+		"lint": "pnpm -r --if-present lint",
+		"build": "pnpm -r --if-present build"
+	},
+	"devDependencies": {
+		"@types/node": "^24.19.2",
+		"typescript": "^6.0.3"
+	}
+}
